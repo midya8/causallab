@@ -1,5 +1,7 @@
 name: ci
 on: [push, pull_request]
+permissions:
+  contents: read
 jobs:
   tests:
     runs-on: ubuntu-latest
@@ -7,16 +9,20 @@ jobs:
       matrix:
         python: ['3.10', '3.11', '3.12', '3.13']
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python }}
       - run: python -m unittest discover -s tests -v
   demo:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.11'
       - run: python -m causallab demo > /tmp/causal-demo.json
@@ -29,3 +35,6 @@ jobs:
       - run: python -m causallab bounds-demo > /tmp/bounds-demo.json
       - run: python examples/render_bounds.py /tmp/bounds-demo.json --check
       - run: python -m causallab bounds --p0 .25 --p1 .75 --monotone
+      - run: python -m causallab graph-demo > /tmp/graph-demo.json
+      - run: python examples/render_graph.py /tmp/graph-demo.json --check
+      - run: python -m causallab dsep examples/collider_graph.json --x X --y Y --given D
