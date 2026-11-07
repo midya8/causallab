@@ -3,6 +3,7 @@ import json
 from .core import infer
 from .demo import demo
 from .multiworld import joint_counterfactual, multiworld_demo
+from .bounds import response_bounds, bounds_demo
 
 
 def unique_object(pairs):
@@ -28,6 +29,10 @@ def main():
     parser=argparse.ArgumentParser(prog='causallab',description='Exact queries for supplied finite structural causal models, not causes learned from data')
     commands=parser.add_subparsers(dest='command',required=True);commands.add_parser('demo',help='run exact confounding and observational-equivalence counterexamples')
     commands.add_parser('multiworld-demo',help='same observed/action marginals, different cross-world dependence')
+    commands.add_parser('bounds-demo',help='sharp binary response bounds and explicit monotonicity restriction')
+    bounds=commands.add_parser('bounds',help='sharp binary response bounds from supplied action marginals, not confidence intervals',description='Sharp binary response bounds from point action marginals, not confidence intervals. Monotonicity is optional and explicit.')
+    bounds.add_argument('--p0',type=float,required=True,help='P(Y under do(X=0) is 1), in [0,1]');bounds.add_argument('--p1',type=float,required=True,help='P(Y under do(X=1) is 1), in [0,1]')
+    bounds.add_argument('--monotone',action='store_true',help='add the structural assumption Y1>=Y0; reject p1<p0')
     joint=commands.add_parser('joint',help='joint shared-noise counterfactuals, factual evidence only')
     joint.add_argument('model');joint.add_argument('--scenarios',required=True,help='JSON file:1..4 objects with name/query/do')
     joint.add_argument('--evidence',default='');joint.add_argument('--trace',action='store_true')
@@ -41,6 +46,8 @@ def main():
     try:
         if args.command=='demo':result=demo()
         elif args.command=='multiworld-demo':result=multiworld_demo()
+        elif args.command=='bounds-demo':result=bounds_demo()
+        elif args.command=='bounds':result=response_bounds(args.p0,args.p1,monotone=args.monotone)
         else:
             with open(args.model,encoding='utf8') as f:text=f.read(262145)
             if len(text.encode('utf8'))>262144:raise ValueError('model JSON exceeds262144 bytes')
