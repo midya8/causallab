@@ -5,6 +5,7 @@ from .demo import demo
 from .multiworld import joint_counterfactual, multiworld_demo
 from .bounds import response_bounds, bounds_demo
 from .graph import d_separation, graph_demo
+from .backdoor import backdoor_criterion, backdoor_sets, backdoor_demo
 
 
 def unique_object(pairs):
@@ -40,6 +41,13 @@ def main():
     graph.add_argument('--x',required=True);graph.add_argument('--y',required=True)
     graph.add_argument('--given',default='',help='comma-separated conditioned node names')
     graph.add_argument('--cut',default='',help='intervention targets: remove incoming edges, not conditioning')
+    commands.add_parser('backdoor-demo',help='confounding, collider bias, forbidden descendants and unavailable common causes')
+    for command in ['backdoor','backdoor-sets']:
+        bd=commands.add_parser(command,help='sufficient backdoor criterion, not complete identification')
+        bd.add_argument('model',help='supplied causal DAG JSON, including relevant latent common causes')
+        bd.add_argument('--treatment',required=True);bd.add_argument('--outcome',required=True)
+        if command=='backdoor':bd.add_argument('--adjust',default='',help='comma-separated adjustment names')
+        else:bd.add_argument('--available',required=True,help='comma-separated declared measurable candidates,0..10; empty string permits only empty set')
     joint=commands.add_parser('joint',help='joint shared-noise counterfactuals, factual evidence only')
     joint.add_argument('model');joint.add_argument('--scenarios',required=True,help='JSON file:1..4 objects with name/query/do')
     joint.add_argument('--evidence',default='');joint.add_argument('--trace',action='store_true')
@@ -54,13 +62,18 @@ def main():
         if args.command=='demo':result=demo()
         elif args.command=='multiworld-demo':result=multiworld_demo()
         elif args.command=='bounds-demo':result=bounds_demo()
+        elif args.command=='backdoor-demo':result=backdoor_demo()
         elif args.command=='graph-demo':result=graph_demo()
         elif args.command=='bounds':result=response_bounds(args.p0,args.p1,monotone=args.monotone)
         else:
             with open(args.model,encoding='utf8') as f:text=f.read(262145)
             if len(text.encode('utf8'))>262144:raise ValueError('model JSON exceeds262144 bytes')
             model=json.loads(text,object_pairs_hook=unique_object)
-            if args.command=='dsep':
+            if args.command in ['backdoor','backdoor-sets']:
+                text=args.adjust if args.command=='backdoor' else args.available
+                names=text.split(',') if text else []
+                result=(backdoor_criterion if args.command=='backdoor' else backdoor_sets)(model,args.treatment,args.outcome,names)
+            elif args.command=='dsep':
                 result=d_separation(model,args.x.split(','),args.y.split(','),args.given.split(',') if args.given else [],interventions=args.cut.split(',') if args.cut else [])
             elif args.command=='joint':
                 with open(args.scenarios,encoding='utf8') as f:scenario_text=f.read(262145)
