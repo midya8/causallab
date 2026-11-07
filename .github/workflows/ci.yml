@@ -23,3 +23,6 @@ jobs:
       - run: python examples/render_demo.py /tmp/causal-demo.json --check
       - run: python -m causallab query examples/confounded.json --query Y --do X=1
       - run: python -m causallab counterfactual examples/common.json --query Y --evidence X=0,Y=0 --do X=1 --trace
+      - run: python -m causallab multiworld-demo > /tmp/multiworld-demo.json
+      - run: python examples/render_multiworld.py /tmp/multiworld-demo.json --check
+      - run: python -m causallab joint examples/response_flip.json --scenarios examples/scenarios.json --evidence X=0,Y=0 --trace
