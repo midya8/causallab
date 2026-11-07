@@ -95,6 +95,38 @@ Y0/Y1 mean Y under do(X=0)/do(X=1) for the **same noise assignment**. Given fact
 
 The `joint` CLI accepts 1..4 scenarios with exactly `name`, `query` and `do`; names are unique, each query has 1..8 unique endogenous variables, and `do` must be an object (possibly empty). Factual `--evidence` is outside the scenarios. Full joint rows are capped at 4,096 **across all scenarios together**; repeated variables in different worlds are separate axes. Scenario/query order is preserved. Traces conservatively cap `world_slots * node_count * (1 + scenario_count)` at 32,768 and include factual values, every action-world prediction, the shared noise and posterior mass. JSON files have the same 262,144-byte cap and duplicate-key checks. No nested counterfactual or cross-world-evidence syntax is implemented.
 
+## Sharp bounds without choosing the response coupling
+
+A fully supplied SCM chooses a cross-world joint. If only p0=P(Y0=1) and p1=P(Y1=1) are supplied, `response_bounds` instead returns the **sharp feasible ranges** and explicit joint distributions that attain each endpoint. It does not quietly choose independent potential outcomes. Optional `monotone=True` adds the structural assumption Y1>=Y0; it is never inferred from a positive average effect.
+
+```python
+from causallab import response_bounds
+result = response_bounds(.25, .75)  # helped [.50,.75], harmed [0,.25]
+restricted = response_bounds(.25, .75, monotone=True)  # helped .50, harmed 0
+```
+
+```bash
+python -m causallab bounds --p0 .25 --p1 .75
+python -m causallab bounds --p0 .25 --p1 .75 --monotone
+python -m causallab bounds-demo > /tmp/bounds-demo.json
+python examples/render_bounds.py /tmp/bounds-demo.json --check
+```
+
+![Sharp binary response ranges with attaining joints and explicit monotonicity](assets/bounds-audit.svg)
+
+Every feasible binary joint has one free coordinate t=P(Y0=1,Y1=1). Nonnegative cells imply `max(0,p0+p1-1) <= t <= min(p0,p1)`. The cells in response order (00,01,10,11) are `(1-p0-p1+t, p1-t, p0-t, t)`. Every value in this interval is feasible; mixing its two endpoint witnesses spans all compatible joints. Each reported quantity is affine in t when its denominator is nonzero, so its extrema occur at the endpoints. [Derivation and checks](DESIGN.md).
+
+| Supplied marginals | Helped, unrestricted | Harmed, unrestricted | Mean effect | Helped, monotone | Harmed, monotone |
+|---|---|---|---:|---:|---:|
+| p0=.50, p1=.50 | [0,.50] | [0,.50] | .00 | .00 | .00 |
+| p0=.25, p1=.75 | [.50,.75] | [0,.25] | +.50 | .50 | .00 |
+
+The existing stable and flip mechanisms attain the unrestricted equal-marginal endpoints. Monotonicity excludes flip, but the matching action marginals alone do not. Positive mean effect in the second example still permits a harmed fraction of .25 without monotonicity. These are synthetic binary response labels, not empirical benefit or injury estimates.
+
+The result includes bounds for all four response cells, changed/unchanged fractions, mean effect, effect variance, covariance, `sufficiency=P(Y1=1 | Y0=0)` and `necessity=P(Y0=0 | Y1=1)`. Zero-probability conditioning events are explicitly **undefined**, not replaced with 0, 1 or an epsilon. Monotonicity with p1<p0 is incompatible and errors. Each bound names its attaining witness; different quantities' extreme endpoints need not be attainable simultaneously.
+
+Internal arithmetic is exact rational arithmetic for the supplied Python int/binary-float inputs. Each numeric result has `value` (rounded float display) and authoritative `exact` (fraction string). For .1 this means the exact binary float, **not** the decimal rational 1/10. Tiny nonzero fractions remain present even if their float display underflows to zero. The two supplied marginals are assumed point **action** probabilities, not automatically observational conditionals. These ranges describe missing coupling information, not sampling confidence intervals, learned marginals, causal validity or real-world recommendations. The API does not propagate uncertainty intervals for unknown p0/p1.
+
 ## Model format
 
 Each named exogenous variable has a categorical distribution. Distinct exogenous variables are assumed independent; multiple equations may use the **same** named variable, which creates a shared latent cause. Nodes are supplied in topological order as deterministic truth tables. An input may name an exogenous variable or an earlier endogenous node.
@@ -126,7 +158,7 @@ Results include the normalized model's SHA-256, query mode, variables/evidence/a
 - Traces additionally cap `world_slots * node_count * (2 if counterfactual else 1)` at 32,768. This is a conservative output/work bound, not a count of actual matched worlds.
 - Exhaustive work scales with world slots and equation/input count, not just number of returned rows. Finite models can still grow exponentially. [Detailed accounting](DESIGN.md).
 
-**64 tests** include independent rational enumeration of the 100-world fixture, all 64 tiny Boolean mechanism pairs, intervention and counterfactual consistency, exact observational equivalence with different interventions, nonbinary table ordering, factual-noise reuse, posterior-trace reconstruction, underflowed rare evidence, zero support, input/RNG isolation, strict CLI errors and resource preflight. Multi-world checks add all 64 Boolean mechanism pairs with independent rational joint references, single-world marginal equivalence, perfect repeated-world coupling, factual evidence, four scenarios, rare log support, trace reconstruction, 4,096-row and 32,768-node-slot boundaries, combined caps and strict scenario-file errors. Every plotted bar value/coordinate, all model/trace metadata and byte-identical regeneration of both SVGs are checked. CI runs Python 3.10..3.13 plus the demo/figure checks.
+**90 tests** include independent rational enumeration of the 100-world fixture, all 64 tiny Boolean mechanism pairs, intervention and counterfactual consistency, exact observational equivalence with different interventions, nonbinary table ordering, factual-noise reuse, posterior-trace reconstruction, underflowed rare evidence, zero support, input/RNG isolation, strict CLI errors and resource preflight. Multi-world checks add all 64 Boolean mechanism pairs with independent rational joint references, single-world marginal equivalence, perfect repeated-world coupling, factual evidence, four scenarios, rare log support, trace reconstruction, 4,096-row and 32,768-node-slot boundaries, combined caps and strict scenario-file errors. Every plotted bar value/coordinate, all model/trace metadata and byte-identical regeneration of all three SVGs are checked. Sharp-bound checks exhaust all 165 denominator-eight response joints across all 81 marginal pairs, verify every bound against the compatible subset with/without monotonicity, reconstruct every attaining witness, cover rare exact fractions/undefined conditioning/degenerate inputs, and test strict CLI failures. CI runs Python 3.10..3.13 plus all demo/figure checks.
 
 No parameter learning, graph discovery, do-calculus identification, correlated exogenous-distribution syntax, cyclic equations, continuous variables, stochastic/soft interventions, empirical confidence intervals or counterfactual fairness guarantee is implemented. Supplied structural couplings determine counterfactuals; observed conditional tables alone do not supply them. No private dataset, GPU, paid API or external service is used.
 
