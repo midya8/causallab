@@ -127,6 +127,41 @@ The result includes bounds for all four response cells, changed/unchanged fracti
 
 Internal arithmetic is exact rational arithmetic for the supplied Python int/binary-float inputs. Each numeric result has `value` (rounded float display) and authoritative `exact` (fraction string). For .1 this means the exact binary float, **not** the decimal rational 1/10. Tiny nonzero fractions remain present even if their float display underflows to zero. The two supplied marginals are assumed point **action** probabilities, not automatically observational conditionals. These ranges describe missing coupling information, not sampling confidence intervals, learned marginals, causal validity or real-world recommendations. The API does not propagate uncertainty intervals for unknown p0/p1.
 
+## Graphical separation, with a visible certificate
+
+`d_separation` checks a **supplied DAG**, without probabilities or table enumeration. It restricts to ancestors of X/Y/given, moralizes that subgraph by joining coparents, removes the conditioned nodes, and checks connectivity. Conditioning can block a chain or fork but **open** a collider, including through a conditioned descendant. Intervention surgery cuts incoming edges before all these steps; it is not conditioning.
+
+```python
+from causallab import d_separation, graph_from_model
+collider = {"version": 1, "nodes": ["X", "C", "Y", "D"],
+            "edges": [["X", "C"], ["Y", "C"], ["C", "D"]]}
+d_separation(collider, ["X"], ["Y"])["d_separated"]  # True
+d_separation(collider, ["X"], ["Y"], ["D"])["moral_witness_path"]  # ["X", "Y"]
+# graph_from_model(scm) includes every named exogenous root and mechanism-input edge.
+```
+
+```bash
+python -m causallab dsep examples/collider_graph.json --x X --y Y --given D
+python -m causallab dsep examples/collider_graph.json --x X --y Y --cut C
+python -m causallab graph-demo > /tmp/graph-demo.json
+python examples/render_graph.py /tmp/graph-demo.json --check
+```
+
+![Chain, fork, collider and incoming-edge surgery with eight separation queries](assets/graph-audit.svg)
+
+| Supplied graph | Given / surgery | D-separated X and Y? |
+|---|---|---|
+| X -> M -> Y | none / given M | no / yes |
+| X <- U -> Y | none / given U | no / yes |
+| X -> C <- Y, C -> D | none / given C / given D | yes / no / no |
+| X <- U -> Y | remove incoming edges to X | yes |
+
+Output contains canonical original/effective graph hashes, removed incoming edges, ancestor/pruned sets, every moral edge with its directed or coparent origins, surviving edges, all nodes reachable from X, and a named-endpoint **moral-graph witness** if connected. That witness can cross an added coparent edge; it is not mislabeled as an original-DAG active path. If separated, the reachable set is a checkable cut certificate. No path enumeration is used in production.
+
+Graph JSON is separate from SCM table JSON: exactly `version: 1`, `nodes` (1..32 unique names) and `edges` (at most 128 unique `[parent, child]` lists). Node order need not be topological; cycles, unknown endpoints, self-loops and extra fields error. X/Y must be nonempty lists/tuples, mutually disjoint and disjoint from `given`; all named sets are unique and known. `interventions` / CLI `--cut` are target **names**, not assignment values. The 262,144-byte CLI file cap and duplicate-key checks also apply. Conversion from an SCM includes shared exogenous common causes rather than silently dropping them.
+
+Separation implies conditional independence for distributions **Markov to the supplied DAG**. Connection does not assert dependence: cancellation, constant interventions or deterministic mechanisms can add independences. Explicitly include relevant latent common causes; missing causes can invalidate the graph's implications. No graph is discovered, no empirical independence test is run, no faithfulness is assumed, and this API does not infer intervention probabilities. [Derivation, complexity and independent path-based checks](DESIGN.md).
+
 ## Model format
 
 Each named exogenous variable has a categorical distribution. Distinct exogenous variables are assumed independent; multiple equations may use the **same** named variable, which creates a shared latent cause. Nodes are supplied in topological order as deterministic truth tables. An input may name an exogenous variable or an earlier endogenous node.
@@ -158,7 +193,7 @@ Results include the normalized model's SHA-256, query mode, variables/evidence/a
 - Traces additionally cap `world_slots * node_count * (2 if counterfactual else 1)` at 32,768. This is a conservative output/work bound, not a count of actual matched worlds.
 - Exhaustive work scales with world slots and equation/input count, not just number of returned rows. Finite models can still grow exponentially. [Detailed accounting](DESIGN.md).
 
-**90 tests** include independent rational enumeration of the 100-world fixture, all 64 tiny Boolean mechanism pairs, intervention and counterfactual consistency, exact observational equivalence with different interventions, nonbinary table ordering, factual-noise reuse, posterior-trace reconstruction, underflowed rare evidence, zero support, input/RNG isolation, strict CLI errors and resource preflight. Multi-world checks add all 64 Boolean mechanism pairs with independent rational joint references, single-world marginal equivalence, perfect repeated-world coupling, factual evidence, four scenarios, rare log support, trace reconstruction, 4,096-row and 32,768-node-slot boundaries, combined caps and strict scenario-file errors. Every plotted bar value/coordinate, all model/trace metadata and byte-identical regeneration of all three SVGs are checked. Sharp-bound checks exhaust all 165 denominator-eight response joints across all 81 marginal pairs, verify every bound against the compatible subset with/without monotonicity, reconstruct every attaining witness, cover rare exact fractions/undefined conditioning/degenerate inputs, and test strict CLI failures. CI runs Python 3.10..3.13 plus all demo/figure checks.
+**115 tests** include independent rational enumeration of the 100-world fixture, all 64 tiny Boolean mechanism pairs, intervention and counterfactual consistency, exact observational equivalence with different interventions, nonbinary table ordering, factual-noise reuse, posterior-trace reconstruction, underflowed rare evidence, zero support, input/RNG isolation, strict CLI errors and resource preflight. Multi-world checks add all 64 Boolean mechanism pairs with independent rational joint references, single-world marginal equivalence, perfect repeated-world coupling, factual evidence, four scenarios, rare log support, trace reconstruction, 4,096-row and 32,768-node-slot boundaries, combined caps and strict scenario-file errors. Every plotted bar value/coordinate, all model/trace metadata and byte-identical regeneration of all four SVGs are checked. Sharp-bound checks exhaust all 165 denominator-eight response joints across all 81 marginal pairs, verify every bound against the compatible subset with/without monotonicity, reconstruct every attaining witness, cover rare exact fractions/undefined conditioning/degenerate inputs, and test strict CLI failures. Graph checks compare ancestral moralization to an independent active-path reference on all 64 four-node DAGs compatible with a fixed order: 49,152 singleton/conditioning/surgery combinations and 7,040 disjoint set queries. They also validate every demo certificate/origin, shared-noise conversion, input limits and strict CLI errors. CI runs Python 3.10..3.13 plus all four demo/figure checks, using Node24-compatible v7 checkout/setup-python actions with read-only repository permission and no persisted checkout credentials.
 
 No parameter learning, graph discovery, do-calculus identification, correlated exogenous-distribution syntax, cyclic equations, continuous variables, stochastic/soft interventions, empirical confidence intervals or counterfactual fairness guarantee is implemented. Supplied structural couplings determine counterfactuals; observed conditional tables alone do not supply them. No private dataset, GPU, paid API or external service is used.
 
@@ -166,4 +201,6 @@ No parameter learning, graph discovery, do-calculus identification, correlated e
 
 Independent implementation of standard finite structural-causal-model semantics. Technical reference: Judea Pearl, **"Causal and Counterfactual Inference," UCLA report R-485**, section 2 and equation 3, including abduction/action/prediction (2019 draft; 2021 handbook chapter). [Author-hosted primary source](https://ftp.cs.ucla.edu/pub/stat_ser/r485.pdf).
 
-This repository's integer tables, algorithms, fixtures, tests and figure are its own. No source text, code, data or figures were copied. It does not reproduce the paper's empirical examples or implement its general identification results. MIT license.
+Graph reference: Steffen Lauritzen, **Causal Inference from Graphical Models**, directed global Markov property and the equivalence of d-separation with separation in an ancestral moral graph. [Author-hosted lecture/chapter PDF](https://web.math.ku.dk/~richard/BSc/Lauritzen.pdf). The graph algorithm and independent path reference are implemented here, not copied from a library.
+
+This repository's integer tables, algorithms, fixtures, tests and figures are its own. No source text, code, data or figures were copied. It does not reproduce the paper's empirical examples or implement its general identification results. MIT license.
