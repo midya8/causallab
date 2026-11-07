@@ -38,3 +38,6 @@ jobs:
       - run: python -m causallab graph-demo > /tmp/graph-demo.json
       - run: python examples/render_graph.py /tmp/graph-demo.json --check
       - run: python -m causallab dsep examples/collider_graph.json --x X --y Y --given D
+      - run: python -m causallab backdoor-demo > /tmp/backdoor-demo.json
+      - run: python examples/render_backdoor.py /tmp/backdoor-demo.json --check
+      - run: python -m causallab backdoor-sets examples/backdoor_graph.json --treatment X --outcome Y --available Z
