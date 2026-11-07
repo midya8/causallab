@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="580" viewBox="0 0 1120 580" role="img" aria-labelledby="title desc">
+<title id="title">CausalLab: same observations do not fix an intervention</title>
+<desc id="desc">Supplied finite structural models, exhaustive enumeration. Association is positive .26 while the interventional difference is negative .10. Two observationally identical models give intervention probabilities 1 and .5; shared-noise counterfactual probabilities 1 and 0 given factual X0,Y0. These are synthetic mechanism assumptions, not learned real-world causes.</desc>
+<metadata>{&quot;adjustment&quot;: [0.6, 0.5], &quot;checks&quot;: {&quot;adjustment_matches_intervention&quot;: true, &quot;association_positive&quot;: true, &quot;different_counterfactuals&quot;: true, &quot;different_interventions&quot;: true, &quot;effect_negative&quot;: true, &quot;negative_in_both_strata&quot;: true, &quot;same_observational_joint&quot;: true}, &quot;counterfactual_traces&quot;: {&quot;common&quot;: [{&quot;exogenous&quot;: {&quot;U&quot;: 0}, &quot;factual&quot;: {&quot;X&quot;: 0, &quot;Y&quot;: 0}, &quot;log_prior&quot;: -0.6931471805599453, &quot;posterior_exogenous_probability&quot;: 1.0, &quot;prediction&quot;: {&quot;X&quot;: 1, &quot;Y&quot;: 0}}], &quot;direct&quot;: [{&quot;exogenous&quot;: {&quot;U&quot;: 0}, &quot;factual&quot;: {&quot;X&quot;: 0, &quot;Y&quot;: 0}, &quot;log_prior&quot;: -0.6931471805599453, &quot;posterior_exogenous_probability&quot;: 1.0, &quot;prediction&quot;: {&quot;X&quot;: 1, &quot;Y&quot;: 1}}]}, &quot;domain&quot;: [0, 1], &quot;models&quot;: {&quot;common&quot;: {&quot;exogenous&quot;: [{&quot;name&quot;: &quot;U&quot;, &quot;probabilities&quot;: [0.5, 0.5]}], &quot;nodes&quot;: [{&quot;inputs&quot;: [&quot;U&quot;], &quot;name&quot;: &quot;X&quot;, &quot;states&quot;: 2, &quot;table&quot;: [0, 1]}, {&quot;inputs&quot;: [&quot;U&quot;], &quot;name&quot;: &quot;Y&quot;, &quot;states&quot;: 2, &quot;table&quot;: [0, 1]}], &quot;version&quot;: 1}, &quot;confounded&quot;: {&quot;exogenous&quot;: [{&quot;name&quot;: &quot;U&quot;, &quot;probabilities&quot;: [0.5, 0.5]}, {&quot;name&quot;: &quot;V&quot;, &quot;probabilities&quot;: [0.2, 0.2, 0.2, 0.2, 0.2]}, {&quot;name&quot;: &quot;W&quot;, &quot;probabilities&quot;: [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]}], &quot;nodes&quot;: [{&quot;inputs&quot;: [&quot;U&quot;], &quot;name&quot;: &quot;Z&quot;, &quot;states&quot;: 2, &quot;table&quot;: [0, 1]}, {&quot;inputs&quot;: [&quot;Z&quot;, &quot;V&quot;], &quot;name&quot;: &quot;X&quot;, &quot;states&quot;: 2, &quot;table&quot;: [1, 1, 1, 1, 0, 1, 0, 0, 0, 0]}, {&quot;inputs&quot;: [&quot;Z&quot;, &quot;X&quot;, &quot;W&quot;], &quot;name&quot;: &quot;Y&quot;, &quot;states&quot;: 2, &quot;table&quot;: [1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0]}], &quot;version&quot;: 1}, &quot;direct&quot;: {&quot;exogenous&quot;: [{&quot;name&quot;: &quot;U&quot;, &quot;probabilities&quot;: [0.5, 0.5]}], &quot;nodes&quot;: [{&quot;inputs&quot;: [&quot;U&quot;], &quot;name&quot;: &quot;X&quot;, &quot;states&quot;: 2, &quot;table&quot;: [0, 1]}, {&quot;inputs&quot;: [&quot;X&quot;], &quot;name&quot;: &quot;Y&quot;, &quot;states&quot;: 2, &quot;table&quot;: [0, 1]}], &quot;version&quot;: 1}}, &quot;observational_joints&quot;: {&quot;common&quot;: [{&quot;log_probability&quot;: -0.6931471805599453, &quot;probability&quot;: 0.5, &quot;values&quot;: {&quot;X&quot;: 0, &quot;Y&quot;: 0}}, {&quot;log_probability&quot;: null, &quot;probability&quot;: 0.0, &quot;values&quot;: {&quot;X&quot;: 0, &quot;Y&quot;: 1}}, {&quot;log_probability&quot;: null, &quot;probability&quot;: 0.0, &quot;values&quot;: {&quot;X&quot;: 1, &quot;Y&quot;: 0}}, {&quot;log_probability&quot;: -0.6931471805599453, &quot;probability&quot;: 0.5, &quot;values&quot;: {&quot;X&quot;: 1, &quot;Y&quot;: 1}}], &quot;direct&quot;: [{&quot;log_probability&quot;: -0.6931471805599453, &quot;probability&quot;: 0.5, &quot;values&quot;: {&quot;X&quot;: 0, &quot;Y&quot;: 0}}, {&quot;log_probability&quot;: null, &quot;probability&quot;: 0.0, &quot;values&quot;: {&quot;X&quot;: 0, &quot;Y&quot;: 1}}, {&quot;log_probability&quot;: null, &quot;probability&quot;: 0.0, &quot;values&quot;: {&quot;X&quot;: 1, &quot;Y&quot;: 0}}, {&quot;log_probability&quot;: -0.6931471805599453, &quot;probability&quot;: 0.5, &quot;values&quot;: {&quot;X&quot;: 1, &quot;Y&quot;: 1}}]}, &quot;selection&quot;: &quot;first hand-specified illustrative mechanisms; exhaustive100-world confounding example and two2-world models; no learned parameters, randomized trials, real data, empirical uncertainty or held-out performance; examples demonstrate model-conditional semantics and observational non-identifiability, not an automatic identification algorithm&quot;, &quot;series&quot;: {&quot;do&quot;: [0.6, 0.5], &quot;observed&quot;: [0.42, 0.68], &quot;twins_counterfactual&quot;: [1.0, 0.0], &quot;twins_do&quot;: [1.0, 0.5]}, &quot;strata&quot;: [[0.9, 0.8], [0.3, 0.2]]}</metadata>
+<rect width="1120" height="580" fill="white"/>
+<text x="28" y="36" font-family="Arial,sans-serif" font-size="25" font-weight="600" fill="#22283a" text-anchor="start">CausalLab | same observations, different interventions</text>
+<text x="28" y="64" font-family="Arial,sans-serif" font-size="14" font-weight="400" fill="#22283a" text-anchor="start">Exhaustive finite worlds under supplied mechanisms. Probability scale 0..1 in every panel.</text>
+<text x="28" y="88" font-family="Arial,sans-serif" font-size="14" font-weight="400" fill="#22283a" text-anchor="start">Synthetic model counterexamples, not effects learned from observational data or policy advice.</text>
+<text x="65" y="128" font-family="Arial,sans-serif" font-size="16" font-weight="600" fill="#22283a" text-anchor="start">A. Confounding reverses the sign</text>
+<text x="65" y="153" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#22283a" text-anchor="start">P(Y=1 | X) versus P(Y=1 | do(X))</text>
+<path d="M65 385.000H350" stroke="#e0e5ea"/>
+<text x="56" y="389" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#22283a" text-anchor="end">0</text>
+<path d="M65 287.500H350" stroke="#e0e5ea"/>
+<text x="56" y="291.5" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#22283a" text-anchor="end">0.5</text>
+<path d="M65 190.000H350" stroke="#e0e5ea"/>
+<text x="56" y="194.0" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#22283a" text-anchor="end">1</text>
+<rect data-series="observed" data-index="0" data-value="0.41999999999999998" x="79" y="303.100" width="42" height="81.900" fill="#8264bb"/>
+<text x="100" y="294.1" font-family="Arial,sans-serif" font-size="13" font-weight="600" fill="#22283a" text-anchor="middle">0.42</text>
+<text x="100" y="407" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#22283a" text-anchor="middle">obs X=0</text>
+<rect data-series="observed" data-index="1" data-value="0.68000000000000005" x="144" y="252.400" width="42" height="132.600" fill="#8264bb"/>
+<text x="165" y="243.39999999999998" font-family="Arial,sans-serif" font-size="13" font-weight="600" fill="#22283a" text-anchor="middle">0.68</text>
+<text x="165" y="407" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#22283a" text-anchor="middle">obs X=1</text>
+<rect data-series="do" data-index="0" data-value="0.59999999999999998" x="229" y="268.000" width="42" height="117.000" fill="#13877d"/>
+<text x="250" y="259.0" font-family="Arial,sans-serif" font-size="13" font-weight="600" fill="#22283a" text-anchor="middle">0.60</text>
+<text x="250" y="407" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#22283a" text-anchor="middle">do X=0</text>
+<rect data-series="do" data-index="1" data-value="0.5" x="294" y="287.500" width="42" height="97.500" fill="#13877d"/>
+<text x="315" y="278.5" font-family="Arial,sans-serif" font-size="13" font-weight="600" fill="#22283a" text-anchor="middle">0.50</text>
+<text x="315" y="407" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#22283a" text-anchor="middle">do X=1</text>
+<text x="425" y="128" font-family="Arial,sans-serif" font-size="16" font-weight="600" fill="#22283a" text-anchor="start">B. Same observational joint</text>
+<text x="425" y="153" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#22283a" text-anchor="start">P(Y=1 | do(X=1))</text>
+<path d="M425 385.000H710" stroke="#e0e5ea"/>
+<text x="416" y="389" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#22283a" text-anchor="end">0</text>
+<path d="M425 287.500H710" stroke="#e0e5ea"/>
+<text x="416" y="291.5" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#22283a" text-anchor="end">0.5</text>
+<path d="M425 190.000H710" stroke="#e0e5ea"/>
+<text x="416" y="194.0" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#22283a" text-anchor="end">1</text>
+<rect data-series="twins_do" data-index="0" data-value="1" x="489" y="190.000" width="42" height="195.000" fill="#13877d"/>
+<text x="510" y="181.0" font-family="Arial,sans-serif" font-size="13" font-weight="600" fill="#22283a" text-anchor="middle">1.00</text>
+<text x="510" y="407" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#22283a" text-anchor="middle">direct</text>
+<rect data-series="twins_do" data-index="1" data-value="0.5" x="629" y="287.500" width="42" height="97.500" fill="#13877d"/>
+<text x="650" y="278.5" font-family="Arial,sans-serif" font-size="13" font-weight="600" fill="#22283a" text-anchor="middle">0.50</text>
+<text x="650" y="407" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#22283a" text-anchor="middle">common</text>
+<text x="785" y="128" font-family="Arial,sans-serif" font-size="16" font-weight="600" fill="#22283a" text-anchor="start">C. Shared-noise counterfactual</text>
+<text x="785" y="153" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#22283a" text-anchor="start">P(Y under X=1 is 1 | factual X=0,Y=0)</text>
+<path d="M785 385.000H1070" stroke="#e0e5ea"/>
+<text x="776" y="389" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#22283a" text-anchor="end">0</text>
+<path d="M785 287.500H1070" stroke="#e0e5ea"/>
+<text x="776" y="291.5" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#22283a" text-anchor="end">0.5</text>
+<path d="M785 190.000H1070" stroke="#e0e5ea"/>
+<text x="776" y="194.0" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#22283a" text-anchor="end">1</text>
+<rect data-series="twins_counterfactual" data-index="0" data-value="1" x="849" y="190.000" width="42" height="195.000" fill="#13877d"/>
+<text x="870" y="181.0" font-family="Arial,sans-serif" font-size="13" font-weight="600" fill="#22283a" text-anchor="middle">1.00</text>
+<text x="870" y="407" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#22283a" text-anchor="middle">direct</text>
+<rect data-series="twins_counterfactual" data-index="1" data-value="0" x="989" y="385.000" width="42" height="0.000" fill="#13877d"/>
+<text x="1010" y="376.0" font-family="Arial,sans-serif" font-size="13" font-weight="600" fill="#22283a" text-anchor="middle">0.00</text>
+<text x="1010" y="407" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#22283a" text-anchor="middle">common</text>
+<text x="65" y="439" font-family="Arial,sans-serif" font-size="14" font-weight="600" fill="#22283a" text-anchor="start">Association difference: +.26</text>
+<text x="65" y="462" font-family="Arial,sans-serif" font-size="14" font-weight="600" fill="#22283a" text-anchor="start">Interventional difference: -.10</text>
+<text x="425" y="439" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#22283a" text-anchor="start">Both: P(X=0,Y=0)=P(X=1,Y=1)=.5</text>
+<text x="425" y="462" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#22283a" text-anchor="start">Direct: X=U,Y=X. Common: X=U,Y=U.</text>
+<text x="785" y="439" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#22283a" text-anchor="start">Factual evidence fixes U=0 in both.</text>
+<text x="785" y="462" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#22283a" text-anchor="start">Reusing U is not drawing fresh noise.</text>
+<text x="28" y="512" font-family="Arial,sans-serif" font-size="16" font-weight="600" fill="#22283a" text-anchor="start">One observational distribution does not identify the causal mechanism. The equations are assumptions.</text>
+<text x="28" y="542" font-family="Arial,sans-serif" font-size="14" font-weight="400" fill="#22283a" text-anchor="start">Observation selects worlds; action replaces an equation; counterfactual prediction reuses factual noise.</text>
+<text x="28" y="565" font-family="Arial,sans-serif" font-size="13" font-weight="400" fill="#22283a" text-anchor="start">Full models, probability values, factual/action traces and fixed domains are embedded in metadata.</text>
+</svg>
