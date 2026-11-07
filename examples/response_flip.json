@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "exogenous": [
+    {
+      "name": "U",
+      "probabilities": [
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "name": "V",
+      "probabilities": [
+        0.5,
+        0.5
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "name": "X",
+      "states": 2,
+      "inputs": [
+        "V"
+      ],
+      "table": [
+        0,
+        1
+      ]
+    },
+    {
+      "name": "Y",
+      "states": 2,
+      "inputs": [
+        "X",
+        "U"
+      ],
+      "table": [
+        0,
+        1,
+        1,
+        0
+      ]
+    }
+  ]
+}
