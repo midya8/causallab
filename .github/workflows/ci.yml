@@ -26,3 +26,6 @@ jobs:
       - run: python -m causallab multiworld-demo > /tmp/multiworld-demo.json
       - run: python examples/render_multiworld.py /tmp/multiworld-demo.json --check
       - run: python -m causallab joint examples/response_flip.json --scenarios examples/scenarios.json --evidence X=0,Y=0 --trace
+      - run: python -m causallab bounds-demo > /tmp/bounds-demo.json
+      - run: python examples/render_bounds.py /tmp/bounds-demo.json --check
+      - run: python -m causallab bounds --p0 .25 --p1 .75 --monotone
