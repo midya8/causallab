@@ -33,7 +33,9 @@ For a counterfactual:
 
 The mechanism is deterministic conditional on u, so the posterior weight on a retained assignment is just its prior mass divided by total retained mass. With no factual evidence, counterfactual prediction matches intervention prediction. With no action, it matches observational conditioning. If the factual action value already holds, imposing that same action leaves the observed conditional outcome distribution unchanged. Tests exercise these identities, including degenerate mechanisms.
 
-This implementation accepts one action world plus its factual evidence, not arbitrary nested counterfactual formulas or joint queries over several different action worlds. `--trace` makes the two evaluations visible, but is not a general twin-network identification algorithm.
+The original `infer` API accepts one action world plus factual evidence. The separate `joint_counterfactual` API extends this to 1..4 independently specified named action worlds. Abduct once using the unmodified model, evaluate each action with that retained assignment, concatenate the requested values across scenarios, and group by the **entire tuple** before normalizing by factual evidence mass. There is one prior weight per assignment, not one per scenario; no second evidence multiplication and no multiplication of marginals. Empty actions reuse the same factual equations, so repeated worlds are perfectly coupled. No arbitrary nested counterfactual formulas, cross-world evidence or general twin-network identification algorithm is implemented.
+
+A scenario has exactly `name`, `query`, `do`; name uniqueness, each query and action, combined output Cartesian size (at most 4,096 rows) and trace work are checked before evaluation. Queries are nested under names in each result row, so the same node can appear in multiple worlds without key collision. Scenario order and query order determine enumeration order. The joint trace records factual values and a separate fresh prediction dictionary for every scenario.
 
 ## Numerical semantics
 
@@ -53,6 +55,8 @@ Let W be the Cartesian noise-world slots, E the number of exogenous variables, N
 - Traces add `O(M*(E+N))` output/memory for noise assignments and factual/predicted values. The trace preflight cap conservatively uses `W*N` times one or two worlds, regardless of zero-probability bins or evidence selectivity.
 - The maximum W is 65,536, not a promise of constant latency. Max tables, inputs, query rows and trace bounds are in the README. Counterfactual mode can do more work than an intervention query with the same returned distribution.
 
+For the multi-world API, let S be scenario count (1..4) and D the total number of requested coordinates across scenarios (at most 32). It performs at most W factual and S*M action evaluations. Joint-key construction/output costs `O(S*M*N + K*D)` as a conservative bound since each query length is at most N; model evaluations cost `O((W+S*M)*(E+N+I))`. Grouped log lists hold at most W entries, not S*W entries. Non-trace working/output memory is `O(W+K*D+S*N+E+I)` excluding input tables. Traces add `O(M*(E+(S+1)*N))`. Its preflight uses `W*N*(S+1) <= 32768`, even if evidence would select only one world. Outputs count every complete scenario evaluation, including repeated or empty actions: no caching or speed claim.
+
 Outputs expose actual factual/action evaluation counts. In ordinary mode, the evaluated model is counted in the action column even when no intervention was supplied. These counts measure complete model evaluations, not table operations, probability normalizations, machine instructions or wall-clock performance. The demo's 100-world example is exhaustive, not a sample of 100 people.
 
 ## Independent checks
@@ -62,6 +66,14 @@ The confounded fixture is checked against a separate `Fraction` loop over all in
 Other tests cover nonbinary mixed-radix order, shared versus independent noise semantics, replacement of multiple equations, joint marginalization/query order, observational-equivalence counterexamples, the abduction/action/prediction consistency identities, log-space rare evidence, impossible events and trace posterior reconstruction. The world-cap boundary is executed at 65,536 slots. Oversized products/tables/query outputs/traces fail before any equation evaluation. CLI tests reject malformed/duplicate-key/oversized input and repeated assignment names without partial output.
 
 The figure generator requires the complete current deterministic demo and rejects changed probabilities, mechanisms, traces or checks. Its eight bars share the [0,1] domain. Tests verify every coordinate/value and the full numeric/model/trace metadata, in addition to byte-identical regeneration. This is a reproducibility contract for fixed development counterexamples, not an empirical benchmark or source of causal validity.
+
+## Cross-world coupling counterexample
+
+The two new four-world fixtures share independent U,V with P(0)=P(1)=.5 and X=V. Stable Y=U gives `(Y0,Y1)=(U,U)`; flip Y=X xor U gives `(Y0,Y1)=(U,1-U)`. V randomizes X independently of U, so every observed `(X,Y)` pair has probability .25 in both. Under each fixed action, both mechanisms return Y=1 with probability .5. Therefore even the complete observed joint and all single-action marginals agree. Stable has response masses (.5,0,0,.5), while flip has (0,.5,.5,0), in order (00,01,10,11). A product of action marginals would give .25 to every response type, incorrectly imposing independent potential outcomes.
+
+For factual X=0,Y=0, both fixtures require U=0,V=0, but stable predicts (0,0) and flip predicts (0,1). These are consequences of two explicit structural assumptions, not identified response-type estimates. No monotonicity is assumed. The fixtures are first hand-specified examples, not selected through mechanism or seed search. The complete demo includes the mechanisms, observations, intervention results, both joint queries and traces, all response masses and the naive product. The second SVG requires that complete unchanged demo; its eight bars and .25 reference lines use one fixed [0,1] scale.
+
+Multi-world tests independently enumerate all 64 Boolean mechanism pairs using rational masses and direct table indexing under two actions, with empty and selected factual evidence. They also check each joint marginal against original single-world inference, repeated-world diagonal support, scenario/query permutation, nonbinary and multiple-node actions, no cross-scenario contamination, trace reconstruction/copy isolation, rare possible support and impossible evidence. Combined bounds are preflighted, and both 4,096 joint rows and the 32,768 trace node-slot boundary are actually executed. Figure tests check all coordinates, metadata/models/traces, changed-input rejection and byte-identical regeneration. Total suite: 64 tests.
 
 ## Source and limits
 
