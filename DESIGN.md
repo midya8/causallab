@@ -45,12 +45,12 @@ Impossible evidence is not automatically softened or repaired. The engine reject
 
 ## Work, memory and output bounds
 
-Let W be the Cartesian noise-world slots, N the number of endogenous nodes, I the total number of mechanism inputs, K the output joint rows and M the positive-prior worlds matching evidence.
+Let W be the Cartesian noise-world slots, E the number of exogenous variables, N the number of endogenous nodes, I the total number of mechanism inputs, K the output joint rows and M the positive-prior worlds matching evidence.
 
 - Model validation costs the table entries plus node/input metadata, before enumeration.
-- An ordinary query evaluates at most W worlds. A counterfactual evaluates at most W factual worlds and M action worlds. Each evaluation costs O(N+I), including model-cardinality lookups and truth-table indexing. There is no variable-elimination or pruning claim.
-- Aggregation retains at most W log masses in groups plus an additional at-most-W matching-log list and K output rows: O(W+K+N+I) working memory, apart from the input tables.
-- Traces add O(M*(exogenous_count+N)) output/memory for noise assignments and factual/predicted values. The trace preflight cap conservatively uses W*N times one or two worlds, regardless of zero-probability bins or evidence selectivity.
+- An ordinary query evaluates at most W worlds. A counterfactual evaluates at most W factual worlds and M action worlds. Each evaluation costs `O(E+N+I)`, including model-cardinality lookups and truth-table indexing. There is no variable-elimination or pruning claim.
+- Aggregation retains at most W log masses in groups plus an additional at-most-W matching-log list and K output rows: `O(W+K+E+N+I)` working memory, apart from the input tables.
+- Traces add `O(M*(E+N))` output/memory for noise assignments and factual/predicted values. The trace preflight cap conservatively uses `W*N` times one or two worlds, regardless of zero-probability bins or evidence selectivity.
 - The maximum W is 65,536, not a promise of constant latency. Max tables, inputs, query rows and trace bounds are in the README. Counterfactual mode can do more work than an intervention query with the same returned distribution.
 
 Outputs expose actual factual/action evaluation counts. In ordinary mode, the evaluated model is counted in the action column even when no intervention was supplied. These counts measure complete model evaluations, not table operations, probability normalizations, machine instructions or wall-clock performance. The demo's 100-world example is exhaustive, not a sample of 100 people.
