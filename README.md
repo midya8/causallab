@@ -59,6 +59,42 @@ Both models use U~Bernoulli(.5), X=U. The direct model sets Y=X; the common-inpu
 
 The last query fixes factual U=0. Setting X=1 then changes Y only in the direct model. In the common-input model, drawing fresh U would give .5 instead of the correct model-conditional 0. The same observational joint therefore does not determine these queries without further mechanism assumptions. The engine is **not** choosing between those assumptions from data.
 
+## Joint outcomes across different action worlds
+
+A marginal per action does not specify their cross-world joint. `joint_counterfactual` keeps one abducted noise posterior and evaluates every named scenario on **each same assignment**. It does not multiply marginals or draw independent copies of a person/noise world. Scenarios do not condition or feed into each other.
+
+```python
+from causallab import joint_counterfactual
+scenarios = [
+    {"name": "off", "query": ["Y"], "do": {"X": 0}},
+    {"name": "on", "query": ["Y"], "do": {"X": 1}},
+]
+result = joint_counterfactual(model, scenarios, evidence={"X": 0, "Y": 0}, trace=True)
+# A row's values are nested: {"off": {"Y": 0}, "on": {"Y": 1}}.
+```
+
+```bash
+python -m causallab multiworld-demo > /tmp/multiworld-demo.json
+python examples/render_multiworld.py /tmp/multiworld-demo.json --check
+python -m causallab joint examples/response_flip.json --scenarios examples/scenarios.json --trace
+python -m causallab joint examples/response_flip.json --scenarios examples/scenarios.json --evidence X=0,Y=0 --trace
+```
+
+![Identical action marginals, different shared-noise response joints](assets/multiworld-audit.svg)
+
+Both supplied four-world models use independent equiprobable U,V and X=V. The stable mechanism has Y=U; the flip mechanism has Y=X xor U. Both have the **same uniform observed (X,Y) joint**, and both have P(Y=1 | do(X=0))=P(Y=1 | do(X=1))=.5. Yet their joint potential outcomes disagree:
+
+| Synthetic response type | (Y0,Y1) | Stable Y=U | Flip Y=X xor U | Naive marginal product |
+|---|---|---:|---:|---:|
+| Always zero | (0,0) | .50 | .00 | .25 |
+| Helped | (0,1) | .00 | .50 | .25 |
+| Harmed | (1,0) | .00 | .50 | .25 |
+| Always one | (1,1) | .50 | .00 | .25 |
+
+Y0/Y1 mean Y under do(X=0)/do(X=1) for the **same noise assignment**. Given factual X=0,Y=0, stable puts all mass at (0,0) and flip at (0,1). The independent product is wrong for both. Neither observational data nor all single-action marginals can distinguish these two couplings. This is a constructed non-identifiability example, not an inference from an actual experiment. No monotonicity is assumed; helped/harmed are only names for synthetic binary response patterns, not empirical benefit or injury claims.
+
+The `joint` CLI accepts 1..4 scenarios with exactly `name`, `query` and `do`; names are unique, each query has 1..8 unique endogenous variables, and `do` must be an object (possibly empty). Factual `--evidence` is outside the scenarios. Full joint rows are capped at 4,096 **across all scenarios together**; repeated variables in different worlds are separate axes. Scenario/query order is preserved. Traces conservatively cap `world_slots * node_count * (1 + scenario_count)` at 32,768 and include factual values, every action-world prediction, the shared noise and posterior mass. JSON files have the same 262,144-byte cap and duplicate-key checks. No nested counterfactual or cross-world-evidence syntax is implemented.
+
 ## Model format
 
 Each named exogenous variable has a categorical distribution. Distinct exogenous variables are assumed independent; multiple equations may use the **same** named variable, which creates a shared latent cause. Nodes are supplied in topological order as deterministic truth tables. An input may name an exogenous variable or an earlier endogenous node.
@@ -90,9 +126,9 @@ Results include the normalized model's SHA-256, query mode, variables/evidence/a
 - Traces additionally cap `world_slots * node_count * (2 if counterfactual else 1)` at 32,768. This is a conservative output/work bound, not a count of actual matched worlds.
 - Exhaustive work scales with world slots and equation/input count, not just number of returned rows. Finite models can still grow exponentially. [Detailed accounting](DESIGN.md).
 
-**38 tests** include independent rational enumeration of the 100-world fixture, all 64 tiny Boolean mechanism pairs, intervention and counterfactual consistency, exact observational equivalence with different interventions, nonbinary table ordering, factual-noise reuse, posterior-trace reconstruction, underflowed rare evidence, zero support, input/RNG isolation, strict CLI errors and resource preflight. Every plotted bar value/coordinate, all model/trace metadata and byte-identical SVG regeneration are checked. CI runs Python 3.10..3.13 plus the demo/figure checks.
+**64 tests** include independent rational enumeration of the 100-world fixture, all 64 tiny Boolean mechanism pairs, intervention and counterfactual consistency, exact observational equivalence with different interventions, nonbinary table ordering, factual-noise reuse, posterior-trace reconstruction, underflowed rare evidence, zero support, input/RNG isolation, strict CLI errors and resource preflight. Multi-world checks add all 64 Boolean mechanism pairs with independent rational joint references, single-world marginal equivalence, perfect repeated-world coupling, factual evidence, four scenarios, rare log support, trace reconstruction, 4,096-row and 32,768-node-slot boundaries, combined caps and strict scenario-file errors. Every plotted bar value/coordinate, all model/trace metadata and byte-identical regeneration of both SVGs are checked. CI runs Python 3.10..3.13 plus the demo/figure checks.
 
-No parameter learning, graph discovery, do-calculus identification, correlated exogenous-distribution syntax, cyclic equations, continuous variables, stochastic/soft interventions, joint multi-action-world queries, empirical confidence intervals or counterfactual fairness guarantee is implemented. Supplied structural couplings determine counterfactuals; observed conditional tables alone do not supply them. No private dataset, GPU, paid API or external service is used.
+No parameter learning, graph discovery, do-calculus identification, correlated exogenous-distribution syntax, cyclic equations, continuous variables, stochastic/soft interventions, empirical confidence intervals or counterfactual fairness guarantee is implemented. Supplied structural couplings determine counterfactuals; observed conditional tables alone do not supply them. No private dataset, GPU, paid API or external service is used.
 
 ## Attribution
 
