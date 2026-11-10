@@ -10,7 +10,7 @@ commands=['demo','multiworld-demo','bounds-demo','graph-demo','backdoor-demo','f
 expected={c:json.loads(subprocess.check_output([sys.executable,'-m','causallab',c]))for c in commands}
 json.dump(expected,open(sys.argv[1],'w'))
 PY
-python -m pip wheel --no-deps --no-build-isolation . -w "$tmp/wheels"
+python -m pip wheel --no-deps . -w "$tmp/wheels"
 python -m venv "$tmp/venv"
 "$tmp/venv/bin/pip" install --no-deps "$tmp"/wheels/*.whl
 mkdir "$tmp/outside"
