@@ -6,6 +6,8 @@ from .multiworld import joint_counterfactual, multiworld_demo
 from .bounds import response_bounds, bounds_demo
 from .graph import d_separation, graph_demo
 from .backdoor import backdoor_criterion, backdoor_sets, backdoor_demo
+from .frontdoor import frontdoor_criterion, frontdoor_sets, frontdoor_demo
+from .frontdoor_effect import frontdoor_effect, frontdoor_effect_demo
 
 
 def unique_object(pairs):
@@ -48,6 +50,15 @@ def main():
         bd.add_argument('--treatment',required=True);bd.add_argument('--outcome',required=True)
         if command=='backdoor':bd.add_argument('--adjust',default='',help='comma-separated adjustment names')
         else:bd.add_argument('--available',required=True,help='comma-separated declared measurable candidates,0..10; empty string permits only empty set')
+    commands.add_parser('frontdoor-effect-demo',help='exact rational functional for a fixed positive synthetic joint')
+    commands.add_parser('frontdoor-demo',help='three sufficient frontdoor conditions with separate failure witnesses')
+    for command in ['frontdoor','frontdoor-sets','frontdoor-effect']:
+        fd=commands.add_parser(command,help='sufficient frontdoor criterion, not general identification')
+        fd.add_argument('model',help='supplied causal DAG JSON including relevant latent common causes')
+        fd.add_argument('--treatment',required=True);fd.add_argument('--outcome',required=True)
+        if command in ['frontdoor','frontdoor-effect']:fd.add_argument('--mediators',default='',help='comma-separated mediator names')
+        else:fd.add_argument('--available',required=True,help='comma-separated declared measurable candidates,0..10')
+        if command=='frontdoor-effect':fd.add_argument('--joint',required=True,help='exact rational positive observed joint JSON')
     joint=commands.add_parser('joint',help='joint shared-noise counterfactuals, factual evidence only')
     joint.add_argument('model');joint.add_argument('--scenarios',required=True,help='JSON file:1..4 objects with name/query/do')
     joint.add_argument('--evidence',default='');joint.add_argument('--trace',action='store_true')
@@ -64,6 +75,8 @@ def main():
         elif args.command=='bounds-demo':result=bounds_demo()
         elif args.command=='backdoor-demo':result=backdoor_demo()
         elif args.command=='graph-demo':result=graph_demo()
+        elif args.command=='frontdoor-demo':result=frontdoor_demo()
+        elif args.command=='frontdoor-effect-demo':result=frontdoor_effect_demo()
         elif args.command=='bounds':result=response_bounds(args.p0,args.p1,monotone=args.monotone)
         else:
             with open(args.model,encoding='utf8') as f:text=f.read(262145)
@@ -73,6 +86,14 @@ def main():
                 text=args.adjust if args.command=='backdoor' else args.available
                 names=text.split(',') if text else []
                 result=(backdoor_criterion if args.command=='backdoor' else backdoor_sets)(model,args.treatment,args.outcome,names)
+            elif args.command in ['frontdoor','frontdoor-sets']:
+                names=args.mediators if args.command=='frontdoor' else args.available
+                result=(frontdoor_criterion if args.command=='frontdoor' else frontdoor_sets)(model,args.treatment,args.outcome,names.split(',') if names else [])
+            elif args.command=='frontdoor-effect':
+                with open(args.joint,encoding='utf8') as f:joint_text=f.read(262145)
+                if len(joint_text.encode('utf8'))>262144:raise ValueError('joint JSON exceeds262144 bytes')
+                observed=json.loads(joint_text,object_pairs_hook=unique_object)
+                result=frontdoor_effect(model,args.treatment,args.outcome,args.mediators.split(',') if args.mediators else [],observed)
             elif args.command=='dsep':
                 result=d_separation(model,args.x.split(','),args.y.split(','),args.given.split(',') if args.given else [],interventions=args.cut.split(',') if args.cut else [])
             elif args.command=='joint':
