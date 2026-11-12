@@ -1,10 +1,28 @@
 # CausalLab
 
-**The same observations can hide different interventions.** An exact finite structural-causal-model engine with separate observational, interventional and shared-noise counterfactual queries. Dependency-free Python 3.10+, strict JSON/CLI, inspectable noise-world traces and exhaustive reference tests.
+Query a supplied finite structural causal model and inspect each noise-world
+contribution. CausalLab keeps observation, intervention and shared-noise
+counterfactuals separate. It also checks supplied DAG separation and sufficient
+adjustment criteria, and computes binary response bounds or an exact supplied-
+joint frontdoor functional.
+
+Python 3.10+, standard library only. The graph and mechanisms are inputs, not
+causes learned from data. Model-conditional answers are not recommendations.
 
 ![Confounding, observational equivalence and shared-noise counterfactuals](assets/causal-audit.svg)
 
-This project computes consequences of **supplied synthetic mechanisms**. It does not learn causes from data, discover a graph, identify an effect automatically, estimate a medical treatment effect or recommend policy. "Exact" means exhaustive discrete enumeration in floating point, not symbolic exact arithmetic or real-world certainty.
+This project computes consequences of **supplied synthetic mechanisms**. It does not learn causes from data, discover a graph, identify an effect automatically, estimate a medical treatment effect or recommend policy. The original SCM engine uses exhaustive discrete enumeration in floating point, not symbolic exact arithmetic. The separate response-bound and frontdoor-functional APIs use rational arithmetic. Neither arithmetic contract establishes real-world certainty.
+
+## Choose the input and calculation
+
+- A finite SCM supplies mechanisms and noise distributions for observation, intervention and shared-noise counterfactual queries.
+- Action marginals alone give response-coupling bounds, not a unique cross-world joint.
+- A supplied DAG supports separation and sufficient backdoor/frontdoor checks, not graph discovery or complete identification.
+- A supplied exact rational joint can be used by the separate frontdoor functional when its stated assumptions and support conditions hold.
+
+The original SCM engine enumerates discrete worlds in floating point. Response
+bounds and the supplied-joint frontdoor functional have their own rational
+arithmetic contracts. Neither form of arithmetic verifies causal assumptions.
 
 ## Run locally
 
@@ -187,7 +205,7 @@ python examples/render_backdoor.py /tmp/backdoor-demo.json --check
 
 The collider fixture has `A -> X`, `A -> C <- B`, `B -> Y` and `X -> Y`. Empty adjustment passes; adding C alone opens `X <- A -> C <- B -> Y` and fails. Adding A or B along with C blocks that opened path. The search does not assume passing sets remain valid under added controls. Other fixed fixtures require confounder Z, reject a post-treatment mediator M, or find no passing set when common cause U remains in the graph but is unavailable for adjustment.
 
-A passing set licenses the adjustment functional `P(y | do(x)) = sum_z P(y | x,z) P(z)` under the supplied **causal DAG and appropriate observed support/positivity**. The checker does not verify those assumptions, inspect data availability, fit an estimator or output probabilities. Available names are the caller's declaration, not inferred data columns. Relevant latent common causes must remain explicit even if not candidates. Finding no passing set is **not proof of non-identifiability**; the standard backdoor criterion is sufficient, not necessary for general adjustment or complete identification. No frontdoor or do-calculus search is implemented.
+A passing set licenses the adjustment functional `P(y | do(x)) = sum_z P(y | x,z) P(z)` under the supplied **causal DAG and appropriate observed support/positivity**. The checker does not verify those assumptions, inspect data availability, fit an estimator or output probabilities. Available names are the caller's declaration, not inferred data columns. Relevant latent common causes must remain explicit even if not candidates. Finding no passing set is **not proof of non-identifiability**; the standard backdoor criterion is sufficient, not necessary for general adjustment or complete identification. The separate sufficient frontdoor checker and bounded candidate search are described below. No general do-calculus search is implemented.
 
 The full single-set result includes original graph identity, original treatment descendants, rejected descendants, removed outgoing arrows and the complete d-separation certificate. Search results share the canonical original/backdoor graph once and retain each subset's conditions, ancestor/reachable sets and moral-path witness. Request a selected set through `backdoor_criterion` for full moral-edge origins. [Algorithm, independent original-path reference and limits](DESIGN.md).
 
@@ -243,7 +261,17 @@ Results include the normalized model's SHA-256, query mode, variables/evidence/a
 - Traces additionally cap `world_slots * node_count * (2 if counterfactual else 1)` at 32,768. This is a conservative output/work bound, not a count of actual matched worlds.
 - Exhaustive work scales with world slots and equation/input count, not just number of returned rows. Finite models can still grow exponentially. [Detailed accounting](DESIGN.md).
 
-**164 tests** include independent rational enumeration of the 100-world fixture, all 64 tiny Boolean mechanism pairs, intervention and counterfactual consistency, exact observational equivalence with different interventions, nonbinary table ordering, factual-noise reuse, posterior-trace reconstruction, underflowed rare evidence, zero support, input/RNG isolation, strict CLI errors and resource preflight. Multi-world checks add all 64 Boolean mechanism pairs with independent rational joint references, single-world marginal equivalence, perfect repeated-world coupling, factual evidence, four scenarios, rare log support, trace reconstruction, 4,096-row and 32,768-node-slot boundaries, combined caps and strict scenario-file errors. Every plotted bar value/coordinate, all model/trace metadata and byte-identical regeneration of the original five SVGs are checked. Sharp-bound checks exhaust all 165 denominator-eight response joints across all 81 marginal pairs, verify every bound against the compatible subset with/without monotonicity, reconstruct every attaining witness, cover rare exact fractions/undefined conditioning/degenerate inputs, and test strict CLI failures. Graph checks compare ancestral moralization to an independent active-path reference on all 64 four-node DAGs compatible with a fixed order: 49,152 singleton/conditioning/surgery combinations and 7,040 disjoint set queries. They also validate every demo certificate/origin, shared-noise conversion, input limits and strict CLI errors. Backdoor checks independently traverse original-DAG paths whose first edge points into the treatment: 3,072 adjustment sets across 768 searches on the same 64 fixed-order four-node DAGs. They test all 1,024 subsets at the candidate cap, descendant rejection, non-monotone collider validity, incomparable inclusion-minimal sets, explicit availability and a positive-support adjustment calculation matching the existing SCM intervention fixture. CI runs Python 3.10..3.13 plus all six demo/figure checks, using Node24-compatible v7 checkout/setup-python actions with read-only repository permission and no persisted checkout credentials.
+The current 164 tests include independent rational enumeration of the 100-world fixture, all 64 tiny Boolean mechanism pairs, intervention and counterfactual consistency, exact observational equivalence with different interventions, nonbinary table ordering, factual-noise reuse, posterior-trace reconstruction, underflowed rare evidence, zero support, input/RNG isolation, strict CLI errors and resource preflight.
+
+Multi-world checks add all 64 Boolean mechanism pairs with independent rational joint references, single-world marginal equivalence, perfect repeated-world coupling, factual evidence, four scenarios, rare log support, trace reconstruction, 4,096-row and 32,768-node-slot boundaries, combined caps and strict scenario-file errors. Every plotted bar value/coordinate, all model/trace metadata and byte-identical regeneration of the original five SVGs are checked.
+
+Sharp-bound checks exhaust all 165 denominator-eight response joints across all 81 marginal pairs, verify every bound against the compatible subset with/without monotonicity, reconstruct every attaining witness, cover rare exact fractions/undefined conditioning/degenerate inputs, and test strict CLI failures.
+
+Graph checks compare ancestral moralization to an independent active-path reference on all 64 four-node DAGs compatible with a fixed order: 49,152 singleton/conditioning/surgery combinations and 7,040 disjoint set queries. They also validate every demo certificate/origin, shared-noise conversion, input limits and strict CLI errors.
+
+Backdoor checks independently traverse original-DAG paths whose first edge points into the treatment: 3,072 adjustment sets across 768 searches on the same 64 fixed-order four-node DAGs. They test all 1,024 subsets at the candidate cap, descendant rejection, non-monotone collider validity, incomparable inclusion-minimal sets, explicit availability and a positive-support adjustment calculation matching the existing SCM intervention fixture.
+
+CI runs Python 3.10..3.13 plus all six demo/figure checks, using Node24-compatible v7 checkout/setup-python actions with read-only repository permission and no persisted checkout credentials.
 
 No parameter learning, graph discovery, general do-calculus identification, correlated exogenous-distribution syntax, cyclic equations, continuous variables, stochastic/soft interventions, empirical confidence intervals or counterfactual fairness guarantee is implemented. Supplied structural couplings determine counterfactuals; observed conditional tables alone do not supply them. No private dataset, GPU, paid API or external service is used.
 
