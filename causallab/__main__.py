@@ -102,7 +102,7 @@ def main():
                 result=joint_counterfactual(model,json.loads(scenario_text,object_pairs_hook=unique_object),assignments(args.evidence),trace=args.trace)
             else:result=infer(model,args.query.split(','),assignments(args.evidence),assignments(args.interventions),counterfactual=args.command=='counterfactual',trace=args.trace)
         print(json.dumps(result,indent=2,allow_nan=False))
-    except (ValueError,TypeError,OSError,OverflowError) as error:parser.exit(2,f'causallab: {error}\n')
+    except (ValueError,TypeError,OSError,OverflowError,RecursionError) as error:parser.exit(2,f'causallab: {error}\n')
 
 
 if __name__=='__main__':main()

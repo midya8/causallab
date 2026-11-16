@@ -38,7 +38,7 @@ python -m causallab counterfactual examples/common.json --query Y --evidence X=0
 python -m causallab query --help
 ```
 
-Output is JSON. Invalid inputs or impossible evidence exit 2 with a prefixed stderr error, no partial stdout and no traceback. The CLI rejects duplicate JSON keys and limits files to 262,144 bytes. API: `from causallab import Model, infer`; `infer(model, ['Y'], evidence={'X': 0}, interventions={'X': 1}, counterfactual=True, trace=True)`.
+Output is JSON. Invalid inputs or impossible evidence exit 2 with a prefixed stderr error, no partial stdout and no traceback. The CLI rejects duplicate JSON keys and limits files to 262,144 bytes. JSON decoder recursion failures also exit 2 with a short prefixed error and no traceback, whether they occur in the primary model, an auxiliary scenario file or an observed-joint file. This catches the decoder failure; it does not impose a portable nesting-depth limit. API: `from causallab import Model, infer`; `infer(model, ['Y'], evidence={'X': 0}, interventions={'X': 1}, counterfactual=True, trace=True)`.
 
 ## Three different operations
 
@@ -228,7 +228,7 @@ bash tools/check_wheel.sh
 
 The functional accepts only integer/fraction probabilities, up to 4,096 cells and normalized denominator LCM at most 1,000,000, with strictly positive P(x,z) in every declared treatment/mediator cell. Every inner conditional, weight and contribution is retained. No undefined conditional is silently filled. This fraction-based functional is separate from the original floating-point/log-space SCM inference API. [Exact contract, proper-path semantics, independent checks and sources](FRONTDOOR.md).
 
-The 26 additions bring the suite to 164 tests. Independent original-DAG paths check 3,072 four-node cases and 720 seeded five/six-node cases; exact world references cover 81 prescribed SCM parameter settings plus joint-mediator/nonbinary cases. Candidate and joint cell boundaries, strict CLI errors, all 12 displayed condition cells, four arrows/nodes and four shared-scale bars are checked. The sixth SVG is byte-reproducible and retains the complete demos in metadata. Installed-wheel checks run outside the checkout with every module's origin validated, seven full demo reports through two entrypoints and two exact functional queries. These are bounded checked cases, not a general correctness proof or statistical efficiency benchmark.
+The 26 additions bring the suite to 167 tests. Independent original-DAG paths check 3,072 four-node cases and 720 seeded five/six-node cases; exact world references cover 81 prescribed SCM parameter settings plus joint-mediator/nonbinary cases. Candidate and joint cell boundaries, strict CLI errors, all 12 displayed condition cells, four arrows/nodes and four shared-scale bars are checked. The sixth SVG is byte-reproducible and retains the complete demos in metadata. Installed-wheel checks run outside the checkout with every module's origin validated, seven full demo reports through two entrypoints and two exact functional queries. These are bounded checked cases, not a general correctness proof or statistical efficiency benchmark.
 
 ## Model format
 
@@ -261,7 +261,9 @@ Results include the normalized model's SHA-256, query mode, variables/evidence/a
 - Traces additionally cap `world_slots * node_count * (2 if counterfactual else 1)` at 32,768. This is a conservative output/work bound, not a count of actual matched worlds.
 - Exhaustive work scales with world slots and equation/input count, not just number of returned rows. Finite models can still grow exponentially. [Detailed accounting](DESIGN.md).
 
-The current 164 tests include independent rational enumeration of the 100-world fixture, all 64 tiny Boolean mechanism pairs, intervention and counterfactual consistency, exact observational equivalence with different interventions, nonbinary table ordering, factual-noise reuse, posterior-trace reconstruction, underflowed rare evidence, zero support, input/RNG isolation, strict CLI errors and resource preflight.
+Three CLI regression tests exercise complete and truncated deeply nested arrays and objects through all three JSON file routes, below the byte cap. Removing the recursion-error handler makes these tests fail.
+
+The current 167 tests include independent rational enumeration of the 100-world fixture, all 64 tiny Boolean mechanism pairs, intervention and counterfactual consistency, exact observational equivalence with different interventions, nonbinary table ordering, factual-noise reuse, posterior-trace reconstruction, underflowed rare evidence, zero support, input/RNG isolation, strict CLI errors and resource preflight.
 
 Multi-world checks add all 64 Boolean mechanism pairs with independent rational joint references, single-world marginal equivalence, perfect repeated-world coupling, factual evidence, four scenarios, rare log support, trace reconstruction, 4,096-row and 32,768-node-slot boundaries, combined caps and strict scenario-file errors. Every plotted bar value/coordinate, all model/trace metadata and byte-identical regeneration of the original five SVGs are checked.
 
