@@ -1,4 +1,4 @@
-# CausalLab
+# Counterfactuals
 
 Query a supplied finite structural causal model and inspect each noise-world
 contribution. CausalLab keeps observation, intervention and shared-noise
@@ -12,6 +12,9 @@ causes learned from data. Model-conditional answers are not recommendations.
 ![Confounding, observational equivalence and shared-noise counterfactuals](assets/causal-audit.svg)
 
 This project computes consequences of **supplied synthetic mechanisms**. It does not learn causes from data, discover a graph, identify an effect automatically, estimate a medical treatment effect or recommend policy. The original SCM engine uses exhaustive discrete enumeration in floating point, not symbolic exact arithmetic. The separate response-bound and frontdoor-functional APIs use rational arithmetic. Neither arithmetic contract establishes real-world certainty.
+
+The repository is now `counterfactuals`. The Python import and CLI names stay
+`causallab` for compatibility with existing scripts.
 
 ## Choose the input and calculation
 
