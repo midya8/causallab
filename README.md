@@ -1,7 +1,7 @@
 # Counterfactuals
 
 Query a supplied finite structural causal model and inspect each noise-world
-contribution. CausalLab keeps observation, intervention and shared-noise
+contribution. This implementation keeps observation, intervention and shared-noise
 counterfactuals separate. It also checks supplied DAG separation and sufficient
 adjustment criteria, and computes binary response bounds or an exact supplied-
 joint frontdoor functional.
